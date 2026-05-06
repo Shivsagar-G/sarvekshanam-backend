@@ -1,0 +1,32 @@
+# render.yaml - Render Deployment Configuration
+# Deploy to: https://render.com/docs/yaml-spec
+
+services:
+  - type: web
+    name: sarvekshanam-backend
+    env: node
+    region: singapore
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: OTP_EXPIRY_MINUTES
+        value: 5
+      - key: CORS_ORIGIN
+        fromService:
+          type: web
+          name: sarvekshanam-frontend
+          envVarKey: RENDER_EXTERNAL_URL
+        # Or set directly:
+        # value: https://your-frontend-url.onrender.com
