@@ -55,7 +55,7 @@ class MSG91SMSService {
         recipients: [
           {
             mobiles: `91${phone}`,
-            OTP: otp   // Must match MSG91 template variable
+            OTP: otp
           }
         ]
       });
@@ -87,31 +87,21 @@ class MSG91SMSService {
       const req = https.request(options, (res) => {
         let data = '';
 
-        res.on('data', (chunk) => {
-          data += chunk;
-        });
-
-        res.on('end', () => {
-          resolve(data);
-        });
+        res.on('data', chunk => data += chunk);
+        res.on('end', () => resolve(data));
       });
 
-      req.on('error', (error) => {
-        reject(error);
-      });
-
+      req.on('error', reject);
       req.write(postData);
       req.end();
     });
   }
 
-  // We keep this for compatibility (your system verifies OTP locally)
   async verifyOTP() {
     return { success: true, verified: true };
   }
 }
 
-// Export singleton instance
 const msg91Service = new MSG91SMSService();
 
 module.exports = {
