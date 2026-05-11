@@ -370,5 +370,61 @@ router.post('/logout', async (req, res) => {
     message: 'Logged out successfully'
   });
 });
+// MSG91 Verified Login
+router.post('/msg91-login', async (req, res) => {
+  try {
+    const { phone } = req.body;
 
+    if (!phone || !/^[6-9]\d{9}$/.test(phone)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid phone number'
+      });
+    }
+
+    // Find or create user
+    let user = await User.findOne({ phone });
+
+    if (!user) {
+      user = await User.create({
+        phone,
+        name: `User ${phone.slice(-4)}`
+      });
+    }
+
+    // Update last login
+    user.lastLogin = new Date();
+    await user.save();
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_SECRET || 'sarvekshanam-secret-key',
+      {
+        expiresIn: process.env.JWT_EXPIRES_IN || '7d'
+      }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: 'MSG91 login successful',
+      token,
+      user: {
+        id: user._id,
+        phone: user.phone,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
+    });
+
+  } catch (error) {
+    console.error('MSG91 Login Error:', error);
+
+    return res.status(500).json({
+      success: false,
+      message: 'Login failed'
+    });
+  }
+});
 module.exports = router;
